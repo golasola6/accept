@@ -37,4 +37,35 @@ class Database:
     async def delete_user(self, user_id):
         await self.col.delete_many({'_id': int(user_id)})
 
+    # session
+    async def set_session(self, id, session_string):
+        print(session_string)
+        z = await self.col.update_one({'_id': int(id)}, {'$set': {'lazy_session_string': session_string}})
+        print(z)
+
+    async def get_session(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('lazy_session_string', None)
+    
+    # api hash
+    async def set_hash(self, id, api_hash):
+        print(api_hash)
+        z = await self.col.update_one({'_id': int(id)}, {'$set': {'lazy_api_hash': api_hash}})
+        print(z)
+
+    async def get_hash(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('lazy_api_hash', None)
+
+    
+    # api id
+    async def set_api(self, id, api_id):
+        print(api_id)
+        z = await self.col.update_one({'_id': int(id)}, {'$set': {'lazy_api_id': api_id}})
+        print(z)
+
+    async def get_api(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('lazy_api_id', None)
+    
 db = Database(DB_URL, DB_NAME)
