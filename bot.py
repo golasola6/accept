@@ -148,7 +148,7 @@ async def getsession(client , message):
         await client.send_message(chat_id=user_id, text=f"😕NO session found !\n\nHere are some tools that you can use...\n\n|=> /generate - to gen session\n|=> /connect - to connect session\n|=> /rename - to start process", parse_mode=enums.ParseMode.HTML)
         return
     await client.send_message(chat_id=user_id, text=f"Here is your session string...\n\n<spoiler><code>{session}</code></spoiler>\n\n⚠ Please dont share this string to anyone, You may loOSE your account.", parse_mode=enums.ParseMode.HTML)
-    
+
 @Bot.on_message(filters.private & filters.command("generate"))
 async def generate_session(bot, msg):
     lazyid = msg.from_user.id
@@ -294,7 +294,7 @@ async def generate_session(bot, msg):
             api_id=apiid,
             api_hash=apihash,
             session_string=sessionstring
-        )        
+        )
         await lazydeveloperrsession.start()
 
         # for any query msg me on telegram - @LazyDeveloperr 👍
@@ -320,12 +320,13 @@ async def accept_old_requests_handler(c, m):
             return await m.reply_text(
                 "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
             )
+
         channel_id = int(m.command[1])
-        print(f"chnnel id : {channel_id}")
+        print(f"channel id : {channel_id}")
 
         if not await verify_user(user_id):
             return await m.reply("⛔ You are not authorized to use this feature.")
-        
+
         sessionstring = await db.get_session(user_id)
         print(f"sessionstring : {sessionstring}")
         apiid = await db.get_api(user_id)
@@ -333,6 +334,7 @@ async def accept_old_requests_handler(c, m):
         apihash = await db.get_hash(user_id)
         print(f"apihash : {apihash}")
         # Check if any value is missing
+
         if not sessionstring or not apiid or not apihash:
             missing_values = []
             if not sessionstring:
@@ -341,7 +343,7 @@ async def accept_old_requests_handler(c, m):
                 missing_values.append("API ID")
             if not apihash:
                 missing_values.append("API hash")
-            
+
             missing_fields = ", ".join(missing_values)
             await c.send_message(
                 chat_id=m.chat.id,
@@ -349,7 +351,7 @@ async def accept_old_requests_handler(c, m):
                 parse_mode=enums.ParseMode.HTML
             )
             return  # Exit the function if values are missing
-        
+
         lazy_userbot = Client(
             name=f"user_{user_id}",
             api_id=apiid,
@@ -357,13 +359,14 @@ async def accept_old_requests_handler(c, m):
             session_string=sessionstring,
             no_updates=True
         )
-        
+
         print("STARTING USERBOT")
         await lazy_userbot.start()
         print("USERBOT STARTED")
+        print(f"USERBOT STARTED : {lazy_userbot}")
 
         print("RESOLVING CHAT")
-        chatz = await lazy_userbot.get_chat(channel_id)
+        chatz = await Client.get_chat(channel_id)
         print(f"CHAT RESOLVED: {chatz.id}")
         
         # required vars
