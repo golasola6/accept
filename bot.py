@@ -11,6 +11,7 @@ from pyrogram.types import Message
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
 from database import db 
+import pyromod.listen
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -743,3 +744,4 @@ Bot.run()
 
 
 #crafted by - the one and only LazyDeveloperr
+
