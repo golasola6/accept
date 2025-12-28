@@ -355,16 +355,18 @@ async def accept_old_requests_handler(c, m):
         
         await lazy_userbot.start()
 
-        chat = await lazy_userbot.get_chat(channel_id)
-
+        chatz = await lazy_userbot.get_chat(channel_id)
+        print(f"chatz = {chatz}")
         # required vars
         approved = 0
 
         # ✅ DO NOT await here
-        async for req in lazy_userbot.get_chat_join_requests(chat.id):
+        print(f"TOUCHED THIs LINE 1")
+        async for req in lazy_userbot.get_chat_join_requests(chatz.id):
             try:
+                print(f"TOUCHED THIs LINE 2")
                 await lazy_userbot.approve_chat_join_request(
-                    chat_id=channel_id,
+                    chat_id=chatz.id,
                     user_id=req.from_user.id
                 )
                 approved += 1
@@ -373,7 +375,7 @@ async def accept_old_requests_handler(c, m):
                 print(f"Error approving {req.from_user.id}: {err}")
 
         await c.send_message(m.chat.id, 
-            f"✅ Approved {approved} pending join requests in channel:\n`{channel_id}`"
+            f"✅ Approved {approved} pending join requests in channel:\n`{chatz.id}`"
         )
 
     except Exception as e:
