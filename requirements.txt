@@ -6,3 +6,4 @@ Flask
 gunicorn
 aiohttp
 Werkzeug
+telethon
