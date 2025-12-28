@@ -312,127 +312,127 @@ async def generate_session(bot, msg):
         await init.edit_text("with ❤ @LazyDeveloper", parse_mode=enums.ParseMode.HTML)
         return
 
-# @Bot.on_message(filters.command("accept_old_request") & filters.user(ADMINS))
-# async def accept_old_requests_handler(c, m):
-#     try:
-#         user_id = m.from_user.id
-
-#         if len(m.command) < 2:
-#             return await m.reply_text(
-#                 "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
-#             )
-
-#         channel_id = int(m.command[1])
-#         print(f"channel id : {channel_id}")
-
-#         if not await verify_user(user_id):
-#             return await m.reply("⛔ You are not authorized to use this feature.")
-
-#         sessionstring = await db.get_session(user_id)
-#         print(f"sessionstring : {sessionstring}")
-#         apiid = await db.get_api(user_id)
-#         print(f"apiid : {apiid}")
-#         apihash = await db.get_hash(user_id)
-#         print(f"apihash : {apihash}")
-#         # Check if any value is missing
-
-#         if not sessionstring or not apiid or not apihash:
-#             missing_values = []
-#             if not sessionstring:
-#                 missing_values.append("session string")
-#             if not apiid:
-#                 missing_values.append("API ID")
-#             if not apihash:
-#                 missing_values.append("API hash")
-
-#             missing_fields = ", ".join(missing_values)
-#             await c.send_message(
-#                 chat_id=m.chat.id,
-#                 text=f"⛔ Missing required information:<b> {missing_fields}. </b>\n\nPlease ensure you have set up all the required details in the database.",
-#                 parse_mode=enums.ParseMode.HTML
-#             )
-#             return  # Exit the function if values are missing
-
-#         lazy_userbot = Client(
-#             name=f"user_{user_id}",
-#             api_id=apiid,
-#             api_hash=apihash,
-#             session_string=sessionstring,
-#             no_updates=True
-#         )
-
-#         print("STARTING USERBOT")
-#         await lazy_userbot.start()
-#         print("USERBOT STARTED")
-#         print(f"USERBOT STARTED : {lazy_userbot}")
-
-#         # await lazy_userbot.join_chat(channel_id)
-#         # await asyncio.sleep(2)
-
-#         print("RESOLVING CHAT")
-#         chatz = await Bot.get_chat(chat_id=channel_id)
-#         print(f"CHAT RESOLVED: {chatz.id}")
-        
-#         # required vars
-#         approved = 0
-
-#         # ✅ DO NOT await here
-#         print(f"fetching join requests")
-#         async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
-#             try:
-#                 print(f"APPROVING {req.from_user.id}")
-#                 await lazy_userbot.approve_chat_join_request(
-#                     chat_id=chatz.id,
-#                     user_id=req.from_user.id
-#                 )
-#                 approved += 1
-#                 await asyncio.sleep(1)  # rate limit
-#             except Exception as err:
-#                 print(f"Error approving {req.from_user.id}: {err}")
-
-#         await c.send_message(m.chat.id, 
-#             f"✅ Approved {approved} pending join requests in channel:\n`{chatz.id}`"
-#         )
-
-#     except Exception as e:
-#         await c.send_message(m.chat.id, f"Something went wrong!\n\n<code>{e}</code>")
-#     finally:
-#         await lazy_userbot.stop()
-
 @Bot.on_message(filters.command("accept_old_request") & filters.user(ADMINS))
-async def accept_old_requests_handler(bot, message):
+async def accept_old_requests_handler(c, m):
     try:
-        if len(message.command) < 2:
-            return await message.reply_text(
-                "❌ Please provide the channel ID.\n\nExample:\n/accept_old_request -1001234567890"
+        user_id = m.from_user.id
+
+        if len(m.command) < 2:
+            return await m.reply_text(
+                "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
             )
 
-        channel_id = int(message.command[1])
+        channel_id = int(m.command[1])
+        print(f"channel id : {channel_id}")
+
+        if not await verify_user(user_id):
+            return await m.reply("⛔ You are not authorized to use this feature.")
+
+        sessionstring = await db.get_session(user_id)
+        print(f"sessionstring : {sessionstring}")
+        apiid = await db.get_api(user_id)
+        print(f"apiid : {apiid}")
+        apihash = await db.get_hash(user_id)
+        print(f"apihash : {apihash}")
+        # Check if any value is missing
+
+        if not sessionstring or not apiid or not apihash:
+            missing_values = []
+            if not sessionstring:
+                missing_values.append("session string")
+            if not apiid:
+                missing_values.append("API ID")
+            if not apihash:
+                missing_values.append("API hash")
+
+            missing_fields = ", ".join(missing_values)
+            await c.send_message(
+                chat_id=m.chat.id,
+                text=f"⛔ Missing required information:<b> {missing_fields}. </b>\n\nPlease ensure you have set up all the required details in the database.",
+                parse_mode=enums.ParseMode.HTML
+            )
+            return  # Exit the function if values are missing
+
+        lazy_userbot = Client(
+            name=f"user_{user_id}",
+            api_id=apiid,
+            api_hash=apihash,
+            session_string=sessionstring,
+            no_updates=True
+        )
+
+        print("STARTING USERBOT")
+        await lazy_userbot.start()
+        print("USERBOT STARTED")
+        print(f"USERBOT STARTED : {lazy_userbot}")
+
+        # await lazy_userbot.join_chat(channel_id)
+        # await asyncio.sleep(2)
+
+        print("RESOLVING CHAT")
+        chatz = await lazy_userbot.get_chat(chat_id=channel_id)
+        print(f"CHAT RESOLVED: {chatz.id}")
+        
+        # required vars
         approved = 0
 
-        await message.reply_text("⏳ Fetching pending join requests...")
-
-        async for req in bot.get_chat_join_requests(channel_id):
+        # ✅ DO NOT await here
+        print(f"fetching join requests")
+        async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
             try:
-                await bot.approve_chat_join_request(
-                    chat_id=channel_id,
+                print(f"APPROVING {req.from_user.id}")
+                await lazy_userbot.approve_chat_join_request(
+                    chat_id=chatz.id,
                     user_id=req.from_user.id
                 )
                 approved += 1
-                await asyncio.sleep(0.7)  # flood-safe
+                await asyncio.sleep(1)  # rate limit
             except Exception as err:
-                print(f"❌ Error approving {req.from_user.id}: {err}")
+                print(f"Error approving {req.from_user.id}: {err}")
 
-        await message.reply_text(
-            f"✅ Successfully approved **{approved}** pending join requests.",
-            quote=True
+        await c.send_message(m.chat.id, 
+            f"✅ Approved {approved} pending join requests in channel:\n`{chatz.id}`"
         )
 
     except Exception as e:
-        await message.reply_text(
-            f"❌ Something went wrong:\n\n<code>{e}</code>",
-            quote=True
-        )
+        await c.send_message(m.chat.id, f"Something went wrong!\n\n<code>{e}</code>")
+    finally:
+        await lazy_userbot.stop()
+
+# @Bot.on_message(filters.command("accept_old_request") & filters.user(ADMINS))
+# async def accept_old_requests_handler(bot, message):
+#     try:
+#         if len(message.command) < 2:
+#             return await message.reply_text(
+#                 "❌ Please provide the channel ID.\n\nExample:\n/accept_old_request -1001234567890"
+#             )
+
+#         channel_id = int(message.command[1])
+#         approved = 0
+
+#         await message.reply_text("⏳ Fetching pending join requests...")
+
+#         async for req in bot.get_chat_join_requests(channel_id):
+#             try:
+#                 await bot.approve_chat_join_request(
+#                     chat_id=channel_id,
+#                     user_id=req.from_user.id
+#                 )
+#                 approved += 1
+#                 await asyncio.sleep(0.7)  # flood-safe
+#             except Exception as err:
+#                 print(f"❌ Error approving {req.from_user.id}: {err}")
+
+#         await message.reply_text(
+#             f"✅ Successfully approved **{approved}** pending join requests.",
+#             quote=True
+#         )
+
+#     except Exception as e:
+#         await message.reply_text(
+#             f"❌ Something went wrong:\n\n<code>{e}</code>",
+#             quote=True
+#         )
 
 async def cancelled(msg):
     if "/cancel" in msg.text:
