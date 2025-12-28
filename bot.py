@@ -315,6 +315,9 @@ async def generate_session(bot, msg):
 async def accept_old_requests_handler(c, m):
     try:
         user_id = m.from_user.id
+        channel_id = int(m.command[1])
+        print(f"chnnel id - {channel_id}")
+        
         if len(m.command) < 2:
             return await m.reply_text(
                 "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
@@ -351,7 +354,7 @@ async def accept_old_requests_handler(c, m):
             session_string=sessionstring,
             no_updates=True
         )
-        channel_id = int(m.command[1])
+        
         
         await lazy_userbot.start()
 
@@ -362,7 +365,7 @@ async def accept_old_requests_handler(c, m):
 
         # ✅ DO NOT await here
         print(f"TOUCHED THIs LINE 1")
-        async for req in lazy_userbot.get_chat_join_requests(chatz.id):
+        async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
             try:
                 print(f"TOUCHED THIs LINE 2")
                 await lazy_userbot.approve_chat_join_request(
@@ -494,7 +497,6 @@ async def set_video(c, m):
         await m.reply("✅ Start intro video saved/updated successfully!")
     except Exception as e:
         await m.reply(f"⚠️ Error: {e}")
-
 
 @Bot.on_message(filters.command("add_btn") & filters.user(ADMINS))
 async def add_btn_handler(client, message):
@@ -628,7 +630,6 @@ async def admin_text_handler(client, message):
 
         await message.reply_text(f"✅ {inserted} button(s) saved.")
         Bot.add_btn_state = None
-
 
 @Bot.on_message(filters.private & filters.command("broadcast") & filters.user(ADMINS))
 async def broadcast_handler(bot: Client, m: Message):
