@@ -334,7 +334,6 @@ async def accept_old_requests_handler(c, m):
         print(f"apiid : {apiid}")
         apihash = await db.get_hash(user_id)
         print(f"apihash : {apihash}")
-        # Check if any value is missing
 
         if not sessionstring or not apiid or not apihash:
             missing_values = []
@@ -365,9 +364,6 @@ async def accept_old_requests_handler(c, m):
         await lazy_userbot.start()
         print("USERBOT STARTED")
         print(f"USERBOT STARTED : {lazy_userbot}")
-
-        # await lazy_userbot.join_chat(channel_id)
-        # await asyncio.sleep(2)
 
         print("RESOLVING CHAT")
         chatz = await lazy_userbot.get_chat(chat_id=channel_id)
@@ -460,13 +456,11 @@ async def cancelled(msg):
 async def verify_user(user_id: int):
     return user_id in ADMINS
 
-# ==========================================================
-# ==========================================================
-
-
-# /////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////
-
+##=========================================================##
+##=========================================================##
+## #####################    (0)   ######################## ##
+###////////////////////////////////////////////////////////##
+###////////////////////////////////////////////////////////##
 
 @Bot.on_message(filters.command("start") & filters.private)                    
 async def start_handler(c, m):
@@ -730,10 +724,9 @@ async def get_stats(bot :Client, message: Message):
     total_users = await db.total_users_count()
     await mr.edit( text=f"👫 TOTAL USER'S = `{total_users}`")
 
-
-
-
 # ==========================================================
+# ==========================================================
+
 @Bot.on_chat_join_request()
 async def req_accept(c, m):
     user_id = m.from_user.id
