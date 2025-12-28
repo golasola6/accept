@@ -358,20 +358,22 @@ async def accept_old_requests_handler(c, m):
             no_updates=True
         )
         
-        print("reached here ")
+        print("STARTING USERBOT")
         await lazy_userbot.start()
+        print("USERBOT STARTED")
 
-        print("reached on tttttooooo")
+        print("RESOLVING CHAT")
         chatz = await lazy_userbot.get_chat(channel_id)
-        print(f"chatz = {chatz}")
+        print(f"CHAT RESOLVED: {chatz.id}")
+        
         # required vars
         approved = 0
 
         # ✅ DO NOT await here
-        print(f"TOUCHED THIs LINE 1")
+        print(f"fetching join requests")
         async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
             try:
-                print(f"TOUCHED THIs LINE 2")
+                print(f"APPROVING {req.from_user.id}")
                 await lazy_userbot.approve_chat_join_request(
                     chat_id=chatz.id,
                     user_id=req.from_user.id
