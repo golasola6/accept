@@ -12,7 +12,6 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
 from database import db 
 import pyromod.listen
-from telethon.tl.types import ChannelParticipantsRequests
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -112,32 +111,29 @@ async def connect_session(bot, msg):
     )
     await asyncio.sleep(1)
     try:
-
-        lazydeveloperrsession = TelegramClient(StringSession(lazydeveloper_string_session), api_id, api_hash)
+        lazydeveloperrsession = Client(
+            name=f"user_{user_id}",
+            api_id=api_id,
+            api_hash=api_hash,
+            session_string=lazydeveloper_string_session
+        )
         await lazydeveloperrsession.start()
 
         # for any query msg me on telegram - @LazyDeveloperr 👍
-        if lazydeveloperrsession.is_connected():
-            await db.set_session(user_id, lazydeveloper_string_session)
-            await db.set_api(user_id, api_id)
-            await db.set_hash(user_id, api_hash)
-            await bot.send_message(
-                chat_id=msg.chat.id,
-                text="Session started successfully! ✅ Use /rename to proceed and enjoy renaming journey 👍."
-            )
-            print(f"Session started successfully for user {user_id} ✅")
-        else:
-            raise RuntimeError("Session could not be started. Please re-check your provided credentials. 👍")
+        await db.set_session(user_id, lazydeveloper_string_session)
+        await db.set_api(user_id, api_id)
+        await db.set_hash(user_id, api_hash)
+        await bot.send_message(
+            chat_id=msg.chat.id,
+            text="Session started successfully! ✅ Use /rename to proceed and enjoy renaming journey 👍."
+        )
+        print(f"Session started successfully for user {user_id} ✅")
     except Exception as e:
         print(f"Error starting session for user {user_id}: {e}")
         await msg.reply("Failed to start session. Please re-check your provided credentials. 👍")
     finally:
         await success.delete()
-        await lazydeveloperrsession.disconnect()
-        if not lazydeveloperrsession.is_connected():
-            print("Session is disconnected successfully!")
-        else:
-            print("Session is still connected.")
+        await lazydeveloperrsession.stop()
         await init.edit_text("with ❤ @LazyDeveloper", parse_mode=enums.ParseMode.HTML)
         return
 
@@ -193,11 +189,11 @@ async def generate_session(bot, msg):
     phone_number = phone_number_msg.text
     await msg.reply("sᴇɴᴅɪɴɢ ᴏᴛᴘ...")
     
-    client = TelegramClient(StringSession(), api_id, api_hash)
-
+    # client = TelegramClient(StringSession(), api_id, api_hash)
+    client = Client(name=f"user_{user_id}", api_id=api_id, api_hash=api_hash, in_memory=True)
     await client.connect()
     try:
-        code = await client.send_code_request(phone_number)
+        code = await client.send_code(phone_number)
     except (ApiIdInvalid, ApiIdInvalidError):
         await msg.reply(
             "`API_ID` ᴀɴᴅ `API_HASH` ᴄᴏᴍʙɪɴᴀᴛɪᴏɴ ɪs ɪɴᴠᴀʟɪᴅ. ᴘʟᴇᴀsᴇ sᴛᴀʀᴛ ɢᴇɴᴇʀᴀᴛɪɴɢ sᴇssɪᴏɴ ᴀɢᴀɪɴ.",
@@ -227,7 +223,7 @@ async def generate_session(bot, msg):
         return
     phone_code = phone_code_msg.text.replace(" ", "")
     try:
-        await client.sign_in(phone_number, phone_code, password=None)
+        await client.sign_in(phone_number, code.phone_code_hash, phone_code)
     except (PhoneCodeInvalid, PhoneCodeInvalidError):
         await msg.reply(
             "ᴏᴛᴘ ɪs ɪɴᴠᴀʟɪᴅ. ᴘʟᴇᴀsᴇ sᴛᴀʀᴛ ɢᴇɴᴇʀᴀᴛɪɴɢ sᴇssɪᴏɴ ᴀɢᴀɪɴ.",
@@ -257,7 +253,7 @@ async def generate_session(bot, msg):
         try:
             password = two_step_msg.text
             
-            await client.sign_in(password=password)
+            await client.check_password(password=password)
             
             if await cancelled(api_id_msg):
                 return
@@ -269,13 +265,14 @@ async def generate_session(bot, msg):
             )
             return
 
-    string_session = client.session.save()
+    # string_session = client.session.save()
+    string_session = await client.export_session_string()
 
     await db.set_session(lazyid, string_session)
     await db.set_api(lazyid, api_id)
     await db.set_hash(lazyid, api_hash)
     
-    text = f"**ᴛᴇʟᴇᴛʜᴏɴ sᴛʀɪɴɢ sᴇssɪᴏɴ** \n\n||`{string_session}`||"
+    text = f"**Pyrogram sᴛʀɪɴɢ sᴇssɪᴏɴ** \n\n||`{string_session}`||"
     try:
         await client.send_message("me", text)
     except KeyError:
@@ -292,28 +289,25 @@ async def generate_session(bot, msg):
         apiid = await db.get_api(lazyid)
         apihash = await db.get_hash(lazyid)
 
-        lazydeveloperrsession= TelegramClient(StringSession(sessionstring), apiid, apihash)
+        lazydeveloperrsession = Client(
+            name=f"user_{user_id}",
+            api_id=apiid,
+            api_hash=apihash,
+            session_string=sessionstring
+        )        
         await lazydeveloperrsession.start()
 
         # for any query msg me on telegram - @LazyDeveloperr 👍
-        if lazydeveloperrsession.is_connected():
-            await bot.send_message(
+        await bot.send_message(
                 chat_id=msg.chat.id,
                 text="Session started successfully! ✅ Use /rename to proceed and enjoy renaming journey 👍."
             )
-            print(f"Session started successfully for user {user_id} ✅")
-        else:
-            raise RuntimeError("Session could not be started.")
+        
     except Exception as e:
-        print(f"Error starting session for user {user_id}: {e}")
         await msg.reply("Failed to start session. Please try again.")
     finally:
         await success.delete()
-        await lazydeveloperrsession.disconnect()
-        if not lazydeveloperrsession.is_connected():
-            print("Session is disconnected successfully!")
-        else:
-            print("Session is still connected.")
+        await lazydeveloperrsession.stop()
         await init.edit_text("with ❤ @LazyDeveloper", parse_mode=enums.ParseMode.HTML)
         return
 
@@ -350,39 +344,29 @@ async def accept_old_requests_handler(c, m):
             )
             return  # Exit the function if values are missing
         
-        lazy_userbot = TelegramClient(StringSession(sessionstring), apiid, apihash)
+        lazy_userbot = Client(
+            name=f"user_{user_id}",
+            api_id=apiid,
+            api_hash=apihash,
+            session_string=sessionstring
+        )
         await lazy_userbot.start()
 
         # required vars
         channel_id = int(m.command[1])
         approved = 0
 
-        async for user in lazy_userbot.iter_participants(
-            channel_id,
-            filter=ChannelParticipantsRequests
-        ):
+        # ✅ DO NOT await here
+        async for req in lazy_userbot.get_chat_join_requests(channel_id):
             try:
                 await c.approve_chat_join_request(
                     chat_id=channel_id,
-                    user_id=user.id
+                    user_id=req.from_user.id
                 )
                 approved += 1
-                await asyncio.sleep(0.5)
-
-            except Exception as e:
-                print(f"Error approving {user.id}: {e}")
-
-        # ✅ DO NOT await here
-        # async for req in lazy_userbot.get_chat_join_requests(channel_id):
-        #     try:
-        #         await c.approve_chat_join_request(
-        #             chat_id=channel_id,
-        #             user_id=req.from_user.id
-        #         )
-        #         approved += 1
-        #         await asyncio.sleep(1)  # rate limit
-        #     except Exception as err:
-        #         print(f"Error approving {req.from_user.id}: {err}")
+                await asyncio.sleep(1)  # rate limit
+            except Exception as err:
+                print(f"Error approving {req.from_user.id}: {err}")
 
         await c.send_message(m.chat.id, 
             f"✅ Approved {approved} pending join requests in channel:\n`{channel_id}`"
@@ -390,7 +374,8 @@ async def accept_old_requests_handler(c, m):
 
     except Exception as e:
         await c.send_message(m.chat.id, f"Something went wrong!\n\n<code>{e}</code>")
-
+    finally:
+        await lazy_userbot.stop()
 
 async def cancelled(msg):
     if "/cancel" in msg.text:
