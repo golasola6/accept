@@ -12,6 +12,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, InputUserDeactivated, UserIsBlocked, PeerIdInvalid
 from database import db 
 import pyromod.listen
+from telethon.tl.types import ChannelParticipantsRequests
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -356,17 +357,32 @@ async def accept_old_requests_handler(c, m):
         channel_id = int(m.command[1])
         approved = 0
 
-        # ✅ DO NOT await here
-        async for req in lazy_userbot.get_chat_join_requests(channel_id):
+        async for user in lazy_userbot.iter_participants(
+            channel_id,
+            filter=ChannelParticipantsRequests
+        ):
             try:
                 await c.approve_chat_join_request(
                     chat_id=channel_id,
-                    user_id=req.from_user.id
+                    user_id=user.id
                 )
                 approved += 1
-                await asyncio.sleep(1)  # rate limit
-            except Exception as err:
-                print(f"Error approving {req.from_user.id}: {err}")
+                await asyncio.sleep(0.5)
+
+            except Exception as e:
+                print(f"Error approving {user.id}: {e}")
+
+        # ✅ DO NOT await here
+        # async for req in lazy_userbot.get_chat_join_requests(channel_id):
+        #     try:
+        #         await c.approve_chat_join_request(
+        #             chat_id=channel_id,
+        #             user_id=req.from_user.id
+        #         )
+        #         approved += 1
+        #         await asyncio.sleep(1)  # rate limit
+        #     except Exception as err:
+        #         print(f"Error approving {req.from_user.id}: {err}")
 
         await c.send_message(m.chat.id, 
             f"✅ Approved {approved} pending join requests in channel:\n`{channel_id}`"
@@ -744,4 +760,3 @@ Bot.run()
 
 
 #crafted by - the one and only LazyDeveloperr
-
