@@ -315,20 +315,23 @@ async def generate_session(bot, msg):
 async def accept_old_requests_handler(c, m):
     try:
         user_id = m.from_user.id
-        channel_id = int(m.command[1])
-        print(f"chnnel id - {channel_id}")
-        
+
         if len(m.command) < 2:
             return await m.reply_text(
                 "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
             )
-        
+        channel_id = int(m.command[1])
+        print(f"chnnel id : {channel_id}")
+
         if not await verify_user(user_id):
             return await m.reply("⛔ You are not authorized to use this feature.")
         
         sessionstring = await db.get_session(user_id)
+        print(f"sessionstring : {sessionstring}")
         apiid = await db.get_api(user_id)
+        print(f"apiid : {apiid}")
         apihash = await db.get_hash(user_id)
+        print(f"apihash : {apihash}")
         # Check if any value is missing
         if not sessionstring or not apiid or not apihash:
             missing_values = []
@@ -355,9 +358,10 @@ async def accept_old_requests_handler(c, m):
             no_updates=True
         )
         
-        
+        print("reached here ")
         await lazy_userbot.start()
 
+        print("reached on tttttooooo")
         chatz = await lazy_userbot.get_chat(channel_id)
         print(f"chatz = {chatz}")
         # required vars
