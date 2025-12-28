@@ -365,8 +365,11 @@ async def accept_old_requests_handler(c, m):
         print("USERBOT STARTED")
         print(f"USERBOT STARTED : {lazy_userbot}")
 
+        await lazy_userbot.join_chat(channel_id)
+        await asyncio.sleep(2)
+
         print("RESOLVING CHAT")
-        chatz = await Client.get_chat(channel_id)
+        chatz = await lazy_userbot.get_chat(chat_id=channel_id)
         print(f"CHAT RESOLVED: {chatz.id}")
         
         # required vars
