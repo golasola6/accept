@@ -348,7 +348,8 @@ async def accept_old_requests_handler(c, m):
             name=f"user_{user_id}",
             api_id=apiid,
             api_hash=apihash,
-            session_string=sessionstring
+            session_string=sessionstring,
+            no_updates=True
         )
         await lazy_userbot.start()
 
@@ -359,7 +360,7 @@ async def accept_old_requests_handler(c, m):
         # ✅ DO NOT await here
         async for req in lazy_userbot.get_chat_join_requests(channel_id):
             try:
-                await c.approve_chat_join_request(
+                await lazy_userbot.approve_chat_join_request(
                     chat_id=channel_id,
                     user_id=req.from_user.id
                 )
