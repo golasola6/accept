@@ -316,12 +316,12 @@ async def generate_session(bot, msg):
 async def accept_old_requests_handler(c, m):
     try:
         user_id = m.from_user.id
-
         if len(m.command) < 2:
             return await m.reply_text(
                 "Please provide the channel ID.\nExample:\n/accept_old_request -1001234567890"
             )
 
+        lmsg = await m.reply("Starting session to approve all user accept... ")
         channel_id = int(m.command[1])
         print(f"channel id : {channel_id}")
 
@@ -352,48 +352,61 @@ async def accept_old_requests_handler(c, m):
             )
             return  # Exit the function if values are missing
 
+
+
         lazy_userbot = Client(
             name=f"user_{user_id}",
-            api_id=apiid,
-            api_hash=apihash,
             session_string=sessionstring,
-            no_updates=True
+            api_id=apiid,
+            api_hash=apihash
         )
 
         print("STARTING USERBOT")
-        await lazy_userbot.start()
+        await lazy_userbot.connect()
         print("USERBOT STARTED")
         print(f"USERBOT STARTED : {lazy_userbot}")
 
         print("RESOLVING CHAT")
-        chatz = await lazy_userbot.get_chat(chat_id=channel_id)
-        print(f"CHAT RESOLVED: {chatz.id}")
+        try:
+            lazybro = await c.listen(channel_id)
+            chatz = await lazy_userbot.get_chat(chat_id=channel_id)
+            print(f"CHAT RESOLVED: {chatz.id}")
+        except Exception as e:
+            await lmsg.edit(f"Make sure you are admin in this channel {channel_id}...")
         
-        # required vars
-        approved = 0
 
-        # ✅ DO NOT await here
         print(f"fetching join requests")
-        async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
-            try:
-                print(f"APPROVING {req.from_user.id}")
-                await lazy_userbot.approve_chat_join_request(
-                    chat_id=chatz.id,
-                    user_id=req.from_user.id
-                )
-                approved += 1
-                await asyncio.sleep(1)  # rate limit
-            except Exception as err:
-                print(f"Error approving {req.from_user.id}: {err}")
 
-        await c.send_message(m.chat.id, 
-            f"✅ Approved {approved} pending join requests in channel:\n`{chatz.id}`"
-        )
+        while True:
+            await lazy_userbot.approve_all_chat_join_requests(channel_id)
+            await asyncio.sleep(1)
+            join_requests = [request async for request in lazy_userbot.get_chat_join_requests(channel_id)]
+            if not join_requests:
+                break
+        await lmsg.edit("✅ Approved all pending join requests in channel:\n`{channel_id}`")
+
+
+
+        # async for req in lazy_userbot.get_chat_join_requests(chat_id=chatz.id):
+        #     try:
+        #         print(f"APPROVING {req.from_user.id}")
+        #         await lazy_userbot.approve_chat_join_request(
+        #             chat_id=chatz.id,
+        #             user_id=req.from_user.id
+        #         )
+        #         approved += 1
+        #         await asyncio.sleep(1)  # rate limit
+        #     except Exception as err:
+        #         print(f"Error approving {req.from_user.id}: {err}")
+
+        # await c.send_message(m.chat.id, 
+        #     f"✅ Approved {approved} pending join requests in channel:\n`{chatz.id}`"
+        # )
 
     except Exception as e:
         await c.send_message(m.chat.id, f"Something went wrong!\n\n<code>{e}</code>")
-    finally:
-        await lazy_userbot.stop()
+    # finally:
+    #     await lazy_userbot.stop()
 
 # @Bot.on_message(filters.command("accept_old_request") & filters.user(ADMINS))
 # async def accept_old_requests_handler(bot, message):
