@@ -408,7 +408,7 @@ async def generate_session(bot, msg):
 #     # finally:
 #     #     await lazy_userbot.stop()
 
-@Client.on_message(filters.command('accept') & filters.private)
+@Bot.on_message(filters.command('accept') & filters.private)
 async def accept(client, message):
     user_id = message.from_user.id
     if not await verify_user(user_id):
